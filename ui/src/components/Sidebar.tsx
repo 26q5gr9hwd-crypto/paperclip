@@ -12,6 +12,7 @@ import {
   Repeat,
   Settings,
   ShieldCheck,
+  Microscope,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { SidebarSection } from "./SidebarSection";
@@ -114,6 +115,7 @@ export function Sidebar() {
           <SidebarNavItem to="/costs" label="Costs" icon={DollarSign} />
           <SidebarNavItem to="/activity" label="Activity" icon={History} />
           <SidebarNavItem to="/runtime-truth" label="Runtime Truth" icon={ShieldCheck} />
+          <SidebarNavItem to="/run-context/76dc1b2d-0aba-41ff-9257-9054381b4ed1" label="Run Inspector" icon={Microscope} />
           <SidebarNavItem to="/company/settings" label="Settings" icon={Settings} />
         </SidebarSection>
 
