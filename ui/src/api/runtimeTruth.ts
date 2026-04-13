@@ -25,6 +25,16 @@ export interface SkillInfo {
   description: string | null;
 }
 
+export type RuntimeInstructionsKind = "hermes_md" | "agents" | "claude" | "cursorrules";
+
+export interface RuntimeInstructionsCandidate {
+  kind: RuntimeInstructionsKind;
+  label: string;
+  path: string;
+  exists: boolean;
+  searchScope: "walk_to_git_root" | "cwd_only";
+}
+
 export interface RuntimeTruthData {
   checkedAt: string;
   systemFiles: FileStatus[];
@@ -41,6 +51,17 @@ export interface RuntimeTruthData {
     budgetPoliciesConfigured: string;
   };
   hermesConfig: Record<string, unknown> | null;
+  instructions: {
+    hermesRuntimeCwd: string | null;
+    precedence: string[];
+    projectContext: {
+      selectedKind: RuntimeInstructionsKind | null;
+      selectedLabel: string | null;
+      selectedPath: string | null;
+      candidates: RuntimeInstructionsCandidate[];
+    };
+    effectiveSummary: string;
+  };
 }
 
 export const runtimeTruthApi = {

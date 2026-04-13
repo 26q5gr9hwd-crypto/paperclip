@@ -28,6 +28,7 @@ import { adapterLabels, roleLabels, help } from "../components/agent-config-prim
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { MarkdownEditor } from "../components/MarkdownEditor";
 import { assetsApi } from "../api/assets";
+import { runtimeTruthApi } from "../api/runtimeTruth";
 import { getUIAdapter, buildTranscript, onAdapterChange } from "../adapters";
 import { StatusBadge } from "../components/StatusBadge";
 import { agentStatusDot, agentStatusDotDefault } from "../lib/status-colors";
@@ -1732,6 +1733,25 @@ function PromptsTab({
     queryFn: () => agentsApi.instructionsBundle(agent.id, companyId),
     enabled: Boolean(companyId && isLocal),
   });
+  const showFridayRuntimeTruth =
+    agent.adapterType === "hermes_local"
+    && (agent.urlKey === "friday" || agent.name.trim().toLowerCase() === "friday");
+  const { data: runtimeTruth, isLoading: runtimeTruthLoading } = useQuery({
+    queryKey: ["runtime-truth", "instructions", agent.id],
+    queryFn: () => runtimeTruthApi.get(),
+    enabled: showFridayRuntimeTruth,
+    staleTime: 30_000,
+  });
+  const adapterConfig = useMemo(
+    () => (typeof agent.adapterConfig === "object" && agent.adapterConfig !== null && !Array.isArray(agent.adapterConfig)
+      ? agent.adapterConfig as Record<string, unknown>
+      : {}),
+    [agent.adapterConfig],
+  );
+  const configuredInstructionsFilePath = typeof adapterConfig.instructionsFilePath === "string"
+    && adapterConfig.instructionsFilePath.trim().length > 0
+    ? adapterConfig.instructionsFilePath.trim()
+    : null;
 
   const persistedMode = bundle?.mode ?? "managed";
   const persistedRootPath = persistedMode === "managed"
@@ -1760,6 +1780,22 @@ function PromptsTab({
     () => buildFileTree(Object.fromEntries(visibleFilePaths.map((filePath) => [filePath, ""]))),
     [visibleFilePaths],
   );
+  const activeSoulFile = runtimeTruth?.systemFiles.find((file) => file.path === "/root/.hermes/SOUL.md") ?? null;
+  const selectedProjectContext = runtimeTruth?.instructions.projectContext.selectedPath ?? null;
+  const paperclipInstructionsHeading = bundle?.mode
+    ? bundle.mode === "managed"
+      ? "Paperclip-managed bundle configured"
+      : "External instructions bundle configured"
+    : configuredInstructionsFilePath
+      ? "Adapter-level instructions file configured"
+      : "Paperclip is not currently the runtime instructions source";
+  const paperclipInstructionsBody = bundle?.mode
+    ? bundle.resolvedEntryPath
+      ? `Entry file ${bundle.entryFile} resolves to ${bundle.resolvedEntryPath}.`
+      : `Bundle mode is ${bundle.mode}, but no entry file is currently resolved for this agent.`
+    : configuredInstructionsFilePath
+      ? `Friday is pointed at ${configuredInstructionsFilePath} through adapterConfig.instructionsFilePath.`
+      : "Friday has no Paperclip instructions bundle mode, no entry root, and no instructionsFilePath on the agent record today.";
   const selectedOrEntryFile = selectedFile || currentEntryFile;
   const selectedFileExists = bundleMatchesDraft && fileOptions.includes(selectedOrEntryFile);
   const selectedFileSummary = bundle?.files.find((file) => file.path === selectedOrEntryFile) ?? null;
@@ -1988,6 +2024,87 @@ function PromptsTab({
 
   return (
     <div className="space-y-6">
+      {showFridayRuntimeTruth && (
+        <div className="rounded-lg border border-border bg-card/40 p-4 space-y-4">
+          <div className="space-y-1">
+            <h4 className="text-sm font-medium">What Friday actually uses today</h4>
+            <p className="text-xs text-muted-foreground">
+              Paperclip can manage an instructions bundle here, but Friday&apos;s live runtime prompt still comes from Hermes.
+            </p>
+          </div>
+
+          {runtimeTruthLoading && !runtimeTruth ? (
+            <div className="grid gap-3 xl:grid-cols-3">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="rounded-lg border border-border p-4 space-y-3">
+                  <Skeleton className="h-3 w-28" />
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid gap-3 xl:grid-cols-3">
+              <div className="rounded-lg border border-border p-4 space-y-3">
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Paperclip bundle</p>
+                  <p className="mt-1 text-sm font-medium">{paperclipInstructionsHeading}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{paperclipInstructionsBody}</p>
+                </div>
+                <dl className="space-y-2 text-xs">
+                  <div className="flex items-start justify-between gap-3">
+                    <dt className="text-muted-foreground">Mode</dt>
+                    <dd className="font-mono text-right">{bundle?.mode ?? "not configured"}</dd>
+                  </div>
+                  <div className="flex items-start justify-between gap-3">
+                    <dt className="text-muted-foreground">Entry</dt>
+                    <dd className="font-mono text-right break-all">{bundle?.entryFile ?? "AGENTS.md"}</dd>
+                  </div>
+                  <div className="flex items-start justify-between gap-3">
+                    <dt className="text-muted-foreground">Bundle files</dt>
+                    <dd className="font-mono text-right">{bundle?.files.length ?? 0}</dd>
+                  </div>
+                </dl>
+              </div>
+
+              <div className="rounded-lg border border-border p-4 space-y-3">
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Hermes runtime files</p>
+                  <p className="mt-1 text-sm font-medium">{selectedProjectContext ?? "No project context file detected"}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{runtimeTruth?.instructions.effectiveSummary ?? "Live Hermes context path unavailable."}</p>
+                </div>
+                <dl className="space-y-2 text-xs">
+                  <div className="flex items-start justify-between gap-3">
+                    <dt className="text-muted-foreground">SOUL.md</dt>
+                    <dd className="font-mono text-right break-all">{activeSoulFile?.exists ? activeSoulFile.path : "missing"}</dd>
+                  </div>
+                  <div className="flex items-start justify-between gap-3">
+                    <dt className="text-muted-foreground">Hermes cwd</dt>
+                    <dd className="font-mono text-right break-all">{runtimeTruth?.instructions.hermesRuntimeCwd ?? "unavailable"}</dd>
+                  </div>
+                </dl>
+              </div>
+
+              <div className="rounded-lg border border-border p-4 space-y-3">
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Effective precedence</p>
+                  <p className="mt-1 text-sm font-medium">Hermes chooses the first matching project context file</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    SOUL.md is loaded separately. Project context then resolves in this order.
+                  </p>
+                </div>
+                <ol className="space-y-1 text-xs text-muted-foreground list-decimal list-inside">
+                  {(runtimeTruth?.instructions.precedence ?? []).map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ol>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {(bundle?.warnings ?? []).length > 0 && (
         <div className="space-y-2">
           {(bundle?.warnings ?? []).map((warning) => (
