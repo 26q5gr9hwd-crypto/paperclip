@@ -1,4 +1,3 @@
-import { SkillVpsOverview } from "../components/SkillVpsStatusBadge";
 import { useEffect, useMemo, useState, type SVGProps } from "react";
 import { Link, useNavigate, useParams } from "@/lib/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -1292,7 +1291,6 @@ export function CompanySkills() {
           />
         </div>
       </div>
-          <div className="mt-6"><SkillVpsOverview /></div>
     </>
   );
 }

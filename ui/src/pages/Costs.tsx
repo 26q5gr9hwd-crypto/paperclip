@@ -1,4 +1,3 @@
-import { BudgetWiringCard } from "../components/BudgetWiringCard";
 import { useEffect, useMemo, useRef, useState, type ComponentType } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
@@ -539,7 +538,6 @@ export function Costs() {
 
   return (
     <div className="space-y-6">
-      <BudgetWiringCard />
       <div className="space-y-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>

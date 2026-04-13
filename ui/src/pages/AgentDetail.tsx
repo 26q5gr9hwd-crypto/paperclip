@@ -1,7 +1,3 @@
-import { BudgetWiringCard } from "../components/BudgetWiringCard";
-import { RuntimeFilesPanel } from "../components/RuntimeFilesPanel";
-import { HermesConfigCard } from "../components/HermesConfigCard";
-import { SkillVpsOverview } from "../components/SkillVpsStatusBadge";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { useParams, useNavigate, Link, Navigate, useBeforeUnload } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -1122,24 +1118,11 @@ export function AgentDetail() {
         />
       )}
 
-      {activeView === "configuration" && (
-        <div className="mt-6 max-w-3xl space-y-4">
-          <RuntimeFilesPanel />
-          <HermesConfigCard />
-        </div>
-      )}
-
       {activeView === "skills" && (
         <AgentSkillsTab
           agent={agent}
           companyId={resolvedCompanyId ?? undefined}
         />
-      )}
-
-      {activeView === "skills" && (
-        <div className="mt-6 max-w-3xl">
-          <SkillVpsOverview />
-        </div>
       )}
 
       {activeView === "runs" && (
@@ -1162,9 +1145,6 @@ export function AgentDetail() {
             onSave={(amount) => budgetMutation.mutate(amount)}
             variant="plain"
           />
-          <div className="mt-4">
-            <BudgetWiringCard />
-          </div>
         </div>
       ) : null}
     </div>

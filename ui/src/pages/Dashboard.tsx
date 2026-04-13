@@ -1,4 +1,3 @@
-import { ServiceHealthStrip } from "../components/ServiceHealthStrip";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
@@ -206,8 +205,6 @@ export function Dashboard() {
           </button>
         </div>
       )}
-
-      <ServiceHealthStrip />
 
       <ActiveAgentsPanel companyId={selectedCompanyId!} />
 
