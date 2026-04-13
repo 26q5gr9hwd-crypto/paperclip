@@ -38,8 +38,6 @@ import { AdapterManager } from "./pages/AdapterManager";
 import { PluginPage } from "./pages/PluginPage";
 import { IssueChatUxLab } from "./pages/IssueChatUxLab";
 import { RunTranscriptUxLab } from "./pages/RunTranscriptUxLab";
-import { RuntimeTruth } from "./pages/RuntimeTruth";
-import RunContextInspector from "./pages/RunContextInspector";
 import { OrgChart } from "./pages/OrgChart";
 import { NewAgent } from "./pages/NewAgent";
 import { AuthPage } from "./pages/Auth";
@@ -182,9 +180,6 @@ function boardRoutes() {
       <Route path="design-guide" element={<DesignGuide />} />
       <Route path="tests/ux/chat" element={<IssueChatUxLab />} />
       <Route path="tests/ux/runs" element={<RunTranscriptUxLab />} />
-      <Route path="runtime-truth" element={<RuntimeTruth />} />
-      <Route path="run-context/:agentId/:runId?" element={<RunContextInspector />} />
-      <Route path="run-context/:agentId" element={<RunContextInspector />} />
       <Route path="instance/settings/adapters" element={<AdapterManager />} />
       <Route path=":pluginRoutePath" element={<PluginPage />} />
       <Route path="*" element={<NotFoundPage scope="board" />} />
@@ -360,9 +355,6 @@ export function App() {
           <Route path="execution-workspaces/:workspaceId/issues" element={<UnprefixedBoardRedirect />} />
           <Route path="tests/ux/chat" element={<UnprefixedBoardRedirect />} />
           <Route path="tests/ux/runs" element={<UnprefixedBoardRedirect />} />
-      <Route path="runtime-truth" element={<RuntimeTruth />} />
-      <Route path="run-context/:agentId/:runId?" element={<RunContextInspector />} />
-      <Route path="run-context/:agentId" element={<RunContextInspector />} />
           <Route path=":companyPrefix" element={<Layout />}>
             {boardRoutes()}
           </Route>
