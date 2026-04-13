@@ -38,6 +38,7 @@ import { Identity } from "../components/Identity";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { RunButton, PauseResumeButton } from "../components/AgentActionButtons";
 import { BudgetPolicyCard } from "../components/BudgetPolicyCard";
+import { RunContextPanel } from "../components/RunContextComponents";
 import { PackageFileTree, buildFileTree } from "../components/PackageFileTree";
 import { ScrollToBottom } from "../components/ScrollToBottom";
 import { formatCents, formatDate, relativeTime, formatTokens, visibleRunCostUsd } from "../lib/utils";
@@ -3368,6 +3369,9 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
         </div>
       )}
 
+
+      {/* Run context observability — FRI-H43 */}
+      <RunContextPanel agentId={run.agentId} runId={run.id} />
       {/* stderr excerpt for failed runs */}
       {run.stderrExcerpt && (
         <div className="space-y-1">
